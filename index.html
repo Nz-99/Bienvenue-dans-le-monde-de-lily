@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Le Monde des Formes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#8FD3FF;
+    --sky-bottom:#CFF0FF;
+    --sun:#FFC93C;
+    --coral:#FF6F59;
+    --blue:#3FA0E8;
+    --mint:#2FBFA8;
+    --grape:#9B6BFF;
+    --ink:#2B3A55;
+    --paper:#FFFDF7;
+    --card-shadow: 0 10px 0 rgba(43,58,85,0.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bottom) 55%, #EAF9E8 100%);
+    overflow:hidden;
+    color:var(--ink);
+    touch-action:manipulation;
+  }
+  #app{position:relative; width:100vw; height:100vh; overflow:hidden;}
+
+  /* decorative background */
+  .deco{position:absolute; border-radius:50%; opacity:0.55; filter:blur(0px);}
+  .cloud{position:absolute; background:#fff; border-radius:60px; opacity:.85;}
+  .cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%;}
+  .hill{position:absolute; bottom:-40px; width:60%; height:180px; background:#B7E8A6; border-radius:50% 50% 0 0/100% 100% 0 0;}
+
+  .screen{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    opacity:1; transition:opacity .35s ease;
+  }
+  .screen.hidden{opacity:0; pointer-events:none;}
+
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; margin:0;}
+
+  /* ---------- HOME ---------- */
+  #screen-home{align-items:center; justify-content:flex-start; padding:clamp(16px,4vw,32px); gap:8px;}
+  .home-title{
+    font-size:clamp(28px,6vw,46px);
+    color:var(--ink);
+    text-align:center;
+    margin-top:clamp(6px,2vh,18px);
+    text-shadow:0 3px 0 rgba(255,255,255,0.6);
+  }
+  .home-welcome{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    max-width:520px; width:100%; margin:6px 0 4px;
+  }
+  .mascot-home{width:clamp(64px,11vw,88px); height:clamp(64px,11vw,88px); flex-shrink:0; animation:wiggle 2.8s ease-in-out infinite; transform-origin:50% 92%;}
+  .mascot-home svg{width:100%; height:100%; overflow:visible;}
+  .home-speech{
+    background:var(--paper); border-radius:16px; padding:8px 16px; box-shadow:var(--card-shadow);
+    font-family:'Nunito',sans-serif; font-weight:700; font-size:clamp(12px,2.6vw,15px);
+    color:var(--ink);
+  }
+  .home-sub{font-weight:700; color:#4B5D7A; margin-bottom:6px; text-align:center;}
+  .module-grid{
+    width:100%; max-width:720px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,2.5vw,18px);
+    overflow-y:auto; padding:8px 4px 24px;
+  }
+  .module-card{
+    background:var(--paper);
+    border-radius:22px;
+    box-shadow:var(--card-shadow);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:clamp(10px,2vw,16px) 6px;
+    cursor:pointer;
+    border:4px solid transparent;
+    transition:transform .12s ease;
+    min-height:clamp(96px,18vw,140px);
+  }
+  .module-card:active{transform:scale(0.94);}
+  .module-card.locked{opacity:0.55; cursor:default;}
+  .module-card.locked:active{transform:none;}
+  .module-emoji{font-size:clamp(30px,7vw,44px); line-height:1;}
+  .module-label{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(12px,2.6vw,16px); margin-top:6px; text-align:center; color:var(--ink);}
+  .module-tag{font-size:11px; font-weight:800; color:#8A97AC; margin-top:2px;}
+  .module-card.available{border-color:var(--sun);}
+
+  /* ---------- LEVEL SELECT ---------- */
+  #screen-levels{align-items:center; padding:clamp(14px,3vw,28px); gap:10px;}
+  .topbar{width:100%; max-width:760px; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .btn-round{
+    width:52px; height:52px; border-radius:50%;
+    background:var(--paper); border:none; box-shadow:var(--card-shadow);
+    font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .btn-round:active{transform:translateY(3px); box-shadow:0 4px 0 rgba(43,58,85,.12);}
+  .level-grid{
+    width:100%; max-width:640px;
+    display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(8px,2vw,16px);
+    margin-top:10px;
+  }
+  .level-btn{
+    aspect-ratio:1/1; border-radius:20px; border:none; cursor:pointer;
+    background:var(--paper); box-shadow:var(--card-shadow);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(18px,4vw,26px);
+    color:var(--ink); position:relative;
+  }
+  .level-btn:active{transform:translateY(3px); box-shadow:0 4px 0 rgba(43,58,85,.12);}
+  .level-btn.locked{background:#E6E9EF; color:#AEB6C4; cursor:default;}
+  .level-btn .stars{position:absolute; bottom:6px; font-size:10px; letter-spacing:1px;}
+  .level-btn .lock-icon{font-size:20px;}
+
+  /* ---------- GAME ---------- */
+  #screen-game{align-items:center; justify-content:space-between; padding:clamp(10px,2vw,18px); gap:6px;}
+  .game-topbar{width:100%; max-width:900px; display:flex; align-items:center; justify-content:space-between;}
+  .level-pill{
+    background:var(--paper); border-radius:999px; padding:8px 18px; box-shadow:var(--card-shadow);
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(14px,3vw,18px);
+  }
+  .mistakes-star-track{display:flex; gap:4px; font-size:clamp(16px,3.4vw,22px);}
+
+  .board{
+    flex:1; width:100%; max-width:900px;
+    display:flex; align-items:center; justify-content:center; gap:clamp(10px,3vw,28px);
+    flex-wrap:wrap;
+  }
+  .tray{
+    width:100%; max-width:900px;
+    display:flex; align-items:flex-end; justify-content:center; gap:clamp(10px,3vw,28px);
+    flex-wrap:wrap;
+    min-height:clamp(90px,16vw,130px);
+    padding-bottom:6px;
+  }
+
+  .slot{
+    border:5px dashed rgba(43,58,85,0.28);
+    background:rgba(255,255,255,0.35);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .slot.filled{border-style:solid; border-color:rgba(43,58,85,0.08); background:rgba(255,255,255,0.15);}
+
+  .piece{
+    display:flex; align-items:center; justify-content:center;
+    cursor:grab; user-select:none; touch-action:none;
+    filter:drop-shadow(0 6px 0 rgba(43,58,85,0.18));
+    animation:bob 2.4s ease-in-out infinite;
+  }
+  .piece.dragging{cursor:grabbing; animation:none; filter:drop-shadow(0 14px 10px rgba(43,58,85,0.35)); z-index:50;}
+  .piece.placed{animation:none; filter:none;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+  .shape-inner{width:100%; height:100%;}
+  .shape-circle{border-radius:50%;}
+  .shape-square{border-radius:16%;}
+  .shape-triangle{clip-path:polygon(50% 2%, 3% 97%, 97% 97%);}
+  .shape-star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+
+  .mascot-row{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    max-width:900px; width:100%;
+  }
+  .mascot{width:clamp(72px,13vw,104px); height:clamp(72px,13vw,104px); animation:wiggle 2.8s ease-in-out infinite; transform-origin:50% 92%;}
+  .mascot svg{width:100%; height:100%; overflow:visible;}
+  .mascot .eyes-happy,.mascot .mouth-happy,.mascot .eyes-confused,.mascot .mouth-confused{display:none;}
+  .mascot[data-state="happy"] .eyes-idle,.mascot[data-state="happy"] .mouth-idle{display:none;}
+  .mascot[data-state="happy"] .eyes-happy,.mascot[data-state="happy"] .mouth-happy{display:inline;}
+  .mascot[data-state="confused"] .eyes-idle,.mascot[data-state="confused"] .mouth-idle{display:none;}
+  .mascot[data-state="confused"] .eyes-confused,.mascot[data-state="confused"] .mouth-confused{display:inline;}
+  .cat-tail{transform-origin:108px 90px; animation:tailWag 1.7s ease-in-out infinite;}
+  @keyframes tailWag{0%,100%{transform:rotate(-6deg);}50%{transform:rotate(6deg);}}
+  @keyframes catPop{0%{transform:scale(1);}35%{transform:scale(1.22) rotate(-4deg);}65%{transform:scale(0.94);}100%{transform:scale(1);}}
+  .mascot.pop{animation:wiggle 2.8s ease-in-out infinite, catPop .5s ease;}
+  @keyframes wiggle{0%,100%{transform:rotate(-6deg);}50%{transform:rotate(6deg);}}
+  .speech{
+    background:var(--paper); border-radius:16px; padding:8px 16px; box-shadow:var(--card-shadow);
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(13px,2.8vw,17px);
+    max-width:60vw;
+  }
+
+  /* ---------- LEVEL COMPLETE ---------- */
+  #screen-complete{align-items:center; justify-content:center; gap:14px; text-align:center;}
+  .complete-card{
+    background:var(--paper); border-radius:28px; padding:clamp(24px,5vw,40px);
+    box-shadow:var(--card-shadow); max-width:420px; width:88%;
+  }
+  .complete-stars{font-size:clamp(36px,8vw,54px); margin:10px 0;}
+  .complete-actions{display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap;}
+  .btn-big{
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(13px,2.8vw,17px);
+    border:none; border-radius:999px; padding:11px 18px; cursor:pointer;
+    box-shadow:0 6px 0 rgba(43,58,85,0.18);
+  }
+  .btn-big:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(43,58,85,0.18);}
+  .btn-primary{background:var(--sun); color:var(--ink);}
+  .btn-secondary{background:#fff; color:var(--ink);}
+
+  #btn-music{
+    position:absolute; top:10px; right:10px; z-index:150;
+    width:44px; height:44px; border-radius:50%; border:none;
+    background:var(--paper); box-shadow:var(--card-shadow);
+    font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  #btn-music:active{transform:translateY(2px);}
+
+  #confetti-canvas{position:absolute; inset:0; pointer-events:none; z-index:200;}
+
+  @media (prefers-reduced-motion:reduce){
+    .piece{animation:none;}
+    .mascot{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="confetti-canvas"></canvas>
+  <button id="btn-music" title="Musique">🔊</button>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen">
+    <h1 class="home-title">🌈 Le Monde des Formes</h1>
+    <div class="home-welcome">
+      <div class="mascot mascot-home" data-state="idle">
+        <svg viewBox="0 0 140 150">
+          <path class="cat-tail" d="M100,120 Q135,110 128,80 Q124,60 108,58 Q122,64 122,82 Q126,104 100,116 Z" fill="#FDFDFD" stroke="#E3E3E3" stroke-width="1"/>
+          <ellipse cx="70" cy="122" rx="46" ry="26" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+          <path d="M38,44 L16,6 L55,32 Z" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+          <path d="M44,36 L28,14 L52,30 Z" fill="#F7C6D2"/>
+          <path d="M102,44 L124,6 L85,32 Z" fill="#2B2B2E" stroke="#E6E6E6" stroke-width="1"/>
+          <circle cx="70" cy="64" r="42" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+          <line x1="8" y1="66" x2="38" y2="70" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="76" x2="38" y2="76" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="102" y1="70" x2="132" y2="66" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="102" y1="76" x2="132" y2="76" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <g class="eyes-idle">
+            <ellipse cx="54" cy="62" rx="9" ry="11" fill="#B9D98C"/>
+            <circle cx="54" cy="64" r="5" fill="#2B2B2E"/>
+            <circle cx="52" cy="60" r="1.6" fill="#fff"/>
+            <ellipse cx="86" cy="62" rx="9" ry="11" fill="#B9D98C"/>
+            <circle cx="86" cy="64" r="5" fill="#2B2B2E"/>
+            <circle cx="84" cy="60" r="1.6" fill="#fff"/>
+          </g>
+          <path d="M65,73 Q70,67 75,73 Q70,79 65,73 Z" fill="#FF9EB5"/>
+          <path class="mouth-idle" d="M60,83 Q65,89 70,83 Q75,89 80,83" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="speech home-speech">Bienvenue dans le monde des formes ! Aide <strong>Lily</strong> à ranger toutes les formes au bon endroit.</div>
+    </div>
+    <p class="home-sub">Choisis une activité !</p>
+    <div class="module-grid" id="module-grid"></div>
+  </div>
+
+  <!-- LEVEL SELECT -->
+  <div id="screen-levels" class="screen hidden">
+    <div class="topbar">
+      <button class="btn-round" id="btn-home-from-levels">🏠</button>
+      <h2 style="font-size:clamp(18px,4vw,26px);">🔵🔺 Les formes</h2>
+      <div style="width:52px;"></div>
+    </div>
+    <div class="level-grid" id="level-grid"></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen hidden">
+    <div class="game-topbar">
+      <button class="btn-round" id="btn-home-from-game">🏠</button>
+      <div class="level-pill" id="game-level-label">Niveau 1</div>
+      <div class="mistakes-star-track" id="game-star-track">⭐⭐⭐</div>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="mascot-row">
+      <div class="mascot" id="mascot" data-state="idle">
+        <svg viewBox="0 0 140 150">
+          <path class="cat-tail" d="M100,120 Q135,110 128,80 Q124,60 108,58 Q122,64 122,82 Q126,104 100,116 Z" fill="#FDFDFD" stroke="#E3E3E3" stroke-width="1"/>
+          <ellipse cx="70" cy="122" rx="46" ry="26" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+          <path d="M38,44 L16,6 L55,32 Z" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+          <path d="M44,36 L28,14 L52,30 Z" fill="#F7C6D2"/>
+          <path d="M102,44 L124,6 L85,32 Z" fill="#2B2B2E" stroke="#E6E6E6" stroke-width="1"/>
+          <circle cx="70" cy="64" r="42" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1"/>
+
+          <line x1="8" y1="66" x2="38" y2="70" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="76" x2="38" y2="76" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="102" y1="70" x2="132" y2="66" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+          <line x1="102" y1="76" x2="132" y2="76" stroke="#DADADA" stroke-width="2" stroke-linecap="round"/>
+
+          <g class="eyes-idle">
+            <ellipse cx="54" cy="62" rx="9" ry="11" fill="#B9D98C"/>
+            <circle cx="54" cy="64" r="5" fill="#2B2B2E"/>
+            <circle cx="52" cy="60" r="1.6" fill="#fff"/>
+            <ellipse cx="86" cy="62" rx="9" ry="11" fill="#B9D98C"/>
+            <circle cx="86" cy="64" r="5" fill="#2B2B2E"/>
+            <circle cx="84" cy="60" r="1.6" fill="#fff"/>
+          </g>
+          <g class="eyes-happy">
+            <path d="M45,60 Q54,48 63,60" fill="none" stroke="#2B2B2E" stroke-width="4" stroke-linecap="round"/>
+            <path d="M77,60 Q86,48 95,60" fill="none" stroke="#2B2B2E" stroke-width="4" stroke-linecap="round"/>
+          </g>
+          <g class="eyes-confused">
+            <line x1="46" y1="62" x2="62" y2="62" stroke="#2B2B2E" stroke-width="4" stroke-linecap="round"/>
+            <ellipse cx="86" cy="62" rx="8" ry="9" fill="#B9D98C"/>
+            <circle cx="86" cy="63" r="4.5" fill="#2B2B2E"/>
+            <path d="M78,46 Q86,39 95,45" fill="none" stroke="#2B2B2E" stroke-width="3" stroke-linecap="round"/>
+          </g>
+
+          <path d="M65,73 Q70,67 75,73 Q70,79 65,73 Z" fill="#FF9EB5"/>
+
+          <path class="mouth-idle" d="M60,83 Q65,89 70,83 Q75,89 80,83" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+          <path class="mouth-happy" d="M55,83 Q70,100 85,83" fill="none" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+          <path class="mouth-confused" d="M58,87 Q64,83 70,87 Q76,91 82,87" fill="none" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="speech" id="speech">Glisse chaque forme sur son emplacement !</div>
+    </div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <!-- LEVEL COMPLETE -->
+  <div id="screen-complete" class="screen hidden">
+    <div class="complete-card">
+      <h2 style="font-size:clamp(22px,5vw,30px);" id="complete-title">Bravo !</h2>
+      <div class="complete-stars" id="complete-stars">⭐⭐⭐</div>
+      <p id="complete-msg" style="font-weight:700; color:#4B5D7A;">Niveau réussi !</p>
+      <div class="complete-actions">
+        <button class="btn-big btn-secondary" id="btn-home-complete">🏠 Menu</button>
+        <button class="btn-big btn-secondary" id="btn-replay">🔁 Rejouer</button>
+        <button class="btn-big btn-primary" id="btn-next">➡️ Suivant</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ MODULES (future-proof hub) ============ */
+  var MODULES = [
+    {id:'shapes', label:'Formes', emoji:'🔷', available:true},
+    {id:'colors', label:'Couleurs', emoji:'🎨', available:false},
+    {id:'numbers', label:'Chiffres', emoji:'🔢', available:false},
+    {id:'letters', label:'Lettres', emoji:'🔤', available:false},
+    {id:'animals', label:'Animaux', emoji:'🐻', available:false},
+    {id:'puzzles', label:'Puzzles', emoji:'🧩', available:false},
+    {id:'memory', label:'Mémoire', emoji:'🧠', available:false}
+  ];
+
+  var SHAPE_COLORS = {
+    circle:'#FF6F59',
+    square:'#3FA0E8',
+    triangle:'#2FBFA8',
+    star:'#FFC93C'
+  };
+  var SHAPE_NAMES_FR = {circle:'le cercle', square:'le carré', triangle:'le triangle', star:'l\u2019étoile'};
+  var SHAPE_SPOKEN_FR = {circle:'un cercle', square:'un carré', triangle:'un triangle', star:'une étoile'};
+
+  var LEVELS = [
+    {shapes:['circle'], shuffle:false},
+    {shapes:['square'], shuffle:false},
+    {shapes:['triangle'], shuffle:false},
+    {shapes:['star'], shuffle:false},
+    {shapes:['circle','square'], shuffle:false},
+    {shapes:['triangle','star'], shuffle:true},
+    {shapes:['circle','square','triangle'], shuffle:true},
+    {shapes:['square','triangle','star'], shuffle:true},
+    {shapes:['circle','square','triangle','star'], shuffle:true},
+    {shapes:['circle','square','triangle','star'], shuffle:true, small:true}
+  ];
+
+  var ENCOURAGEMENTS = ['Bravo !','Super !','Génial !','Continue comme ça !','Tu es un champion !','Magnifique !'];
+  var TRY_AGAIN = ['Presque ! Réessaie.','Pas tout à fait, essaie encore.','On y est presque !'];
+
+  /* ============ STATE ============ */
+  var state = {
+    progress: {unlockedLevel:1, stars:{}},
+    currentLevelIndex:0,
+    mistakesThisLevel:0,
+    piecesPlaced:0,
+    totalPieces:0
+  };
+
+  /* ============ STORAGE (persistent, localStorage) ============ */
+  var STORAGE_KEY = 'shapes-module-progress';
+  function loadProgress(){
+    try{
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if(raw){ state.progress = JSON.parse(raw); }
+    }catch(e){ /* localStorage indisponible : on reste sur les valeurs par défaut */ }
+    return Promise.resolve();
+  }
+  function saveProgress(){
+    try{
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
+    }catch(e){ /* stockage indisponible, la progression restera en mémoire seulement */ }
+  }
+
+  /* ============ AUDIO ============ */
+  var actx = null;
+  function getCtx(){
+    if(!actx){
+      try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx = null; }
+    }
+    return actx;
+  }
+  function tone(freq, start, dur, type, gainVal){
+    var ctx = getCtx();
+    if(!ctx) return;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ctx.currentTime+start);
+    gain.gain.linearRampToValueAtTime(gainVal||0.2, ctx.currentTime+start+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+start+dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(ctx.currentTime+start);
+    osc.stop(ctx.currentTime+start+dur+0.02);
+  }
+  function playPickup(){ tone(700,0,0.08,'sine',0.15); }
+  function playCorrect(){ tone(523,0,0.12,'sine',0.2); tone(659,0.1,0.12,'sine',0.2); tone(784,0.2,0.16,'sine',0.22); }
+  function playTryAgain(){ tone(320,0,0.12,'sine',0.12); tone(260,0.1,0.16,'sine',0.1); }
+  function playLevelComplete(){ [523,587,659,784,1047].forEach(function(f,i){ tone(f,i*0.12,0.16,'triangle',0.2); }); }
+  function playGameComplete(){ [523,659,784,1047,784,1047,1319].forEach(function(f,i){ tone(f,i*0.13,0.2,'triangle',0.22); }); }
+
+  /* ============ VOIX FÉMININE (synthèse vocale) ============ */
+  var frVoice = null;
+  var voiceReady = false;
+  function pickVoice(){
+    if(!('speechSynthesis' in window)) return;
+    var voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return;
+    var fr = voices.filter(function(v){ return /fr(-|_)?/i.test(v.lang); });
+    var preferred = fr.filter(function(v){ return /f[ée]m|female|aurelie|audrey|marie|amelie|amélie|virginie|léa|celine|céline|thomas|daniel/i.test(v.name); });
+    // Priorité : voix FR féminine > voix FR quelconque > n'importe quelle voix
+    frVoice = preferred[0] || fr[0] || voices[0] || null;
+    voiceReady = true;
+  }
+  if('speechSynthesis' in window){
+    pickVoice();
+    window.speechSynthesis.onvoiceschanged = pickVoice;
+    // iOS charge parfois les voix avec du retard : on réessaie plusieurs fois.
+    var voiceTries = 0;
+    var voicePoll = setInterval(function(){
+      pickVoice();
+      if(voiceReady || ++voiceTries > 20){ clearInterval(voicePoll); }
+    }, 250);
+  }
+  function speak(text){
+    if(!('speechSynthesis' in window)) return;
+    try{
+      // Ne pas couper une phrase en cours sur iOS (cancel peut tout bloquer) :
+      // on annule seulement si quelque chose est réellement en train de parler.
+      if(window.speechSynthesis.speaking){ window.speechSynthesis.cancel(); }
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      if(frVoice) u.voice = frVoice;
+      u.rate = 0.9; u.pitch = 1.3;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  // Amorçage iOS : un tout premier énoncé quasi-muet pendant le geste,
+  // sans quoi Safari refuse toute voix ensuite.
+  var voicePrimed = false;
+  function primeVoice(){
+    if(voicePrimed || !('speechSynthesis' in window)) return;
+    voicePrimed = true;
+    try{
+      var u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0; u.lang = 'fr-FR';
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  /* ============ MUSIQUE DE FOND ============ */
+  var musicOn = true;
+  var musicNodes = null;
+  var melodyTimer = null;
+  // Petite mélodie douce en boucle (notes de berceuse)
+  var MELODY = [523,587,659,587,523,659,784,659,587,523,659,587];
+  function startMusic(){
+    var ctx = getCtx();
+    if(!ctx || musicNodes) return;
+    var master = ctx.createGain();
+    master.gain.value = 0.06; // volume très discret
+    master.connect(ctx.destination);
+    musicNodes = {master:master};
+    var step = 0;
+    function playStep(){
+      if(!musicOn || !musicNodes) return;
+      var freq = MELODY[step % MELODY.length];
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(1, ctx.currentTime+0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+      osc.connect(g); g.connect(master);
+      osc.start(); osc.stop(ctx.currentTime+0.55);
+      step++;
+      melodyTimer = setTimeout(playStep, 620);
+    }
+    playStep();
+  }
+  function stopMusic(){
+    musicOn = false;
+    if(melodyTimer){ clearTimeout(melodyTimer); melodyTimer = null; }
+    if(musicNodes){ try{ musicNodes.master.disconnect(); }catch(e){} musicNodes = null; }
+  }
+  function toggleMusic(){
+    if(musicOn){ stopMusic(); }
+    else { musicOn = true; startMusic(); }
+    return musicOn;
+  }
+
+  /* ============ CONFETTI ============ */
+  var canvas = document.getElementById('confetti-canvas');
+  var ctx2d = canvas.getContext('2d');
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  var confettiParticles = [];
+  var confettiRAF = null;
+  function burstConfetti(count){
+    var colors = ['#FF6F59','#3FA0E8','#2FBFA8','#FFC93C','#9B6BFF'];
+    for(var i=0;i<count;i++){
+      confettiParticles.push({
+        x: canvas.width/2 + (Math.random()-0.5)*200,
+        y: canvas.height*0.3,
+        vx: (Math.random()-0.5)*6,
+        vy: -Math.random()*6-2,
+        size: 6+Math.random()*6,
+        color: colors[i%colors.length],
+        rot: Math.random()*Math.PI,
+        vrot: (Math.random()-0.5)*0.3,
+        life: 0
+      });
+    }
+    if(!confettiRAF) confettiLoop();
+  }
+  function confettiLoop(){
+    ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    confettiParticles.forEach(function(p){
+      p.vy += 0.15; p.x += p.vx; p.y += p.vy; p.rot += p.vrot; p.life++;
+      ctx2d.save();
+      ctx2d.translate(p.x,p.y); ctx2d.rotate(p.rot);
+      ctx2d.fillStyle = p.color;
+      ctx2d.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      ctx2d.restore();
+    });
+    confettiParticles = confettiParticles.filter(function(p){ return p.y < canvas.height+40 && p.life < 240; });
+    if(confettiParticles.length>0){
+      confettiRAF = requestAnimationFrame(confettiLoop);
+    } else {
+      confettiRAF = null;
+      ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+
+  /* ============ SCREEN NAV ============ */
+  function showScreen(id){
+    ['screen-home','screen-levels','screen-game','screen-complete'].forEach(function(s){
+      document.getElementById(s).classList.toggle('hidden', s!==id);
+    });
+  }
+
+  /* ============ HOME RENDER ============ */
+  function renderHome(){
+    var grid = document.getElementById('module-grid');
+    grid.innerHTML = '';
+    MODULES.forEach(function(m){
+      var card = document.createElement('div');
+      card.className = 'module-card ' + (m.available ? 'available' : 'locked');
+      card.innerHTML = '<div class="module-emoji">'+m.emoji+'</div>'+
+        '<div class="module-label">'+m.label+'</div>'+
+        (m.available ? '' : '<div class="module-tag">🔒 Bientôt</div>');
+      if(m.available){
+        card.addEventListener('click', function(){ renderLevelSelect(); showScreen('screen-levels'); });
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  /* ============ LEVEL SELECT RENDER ============ */
+  function renderLevelSelect(){
+    var grid = document.getElementById('level-grid');
+    grid.innerHTML = '';
+    for(var i=0;i<LEVELS.length;i++){
+      var num = i+1;
+      var unlocked = num <= state.progress.unlockedLevel;
+      var btn = document.createElement('button');
+      btn.className = 'level-btn' + (unlocked ? '' : ' locked');
+      var starsEarned = state.progress.stars[num] || 0;
+      btn.innerHTML = unlocked ?
+        (num + '<div class="stars">'+ '⭐'.repeat(starsEarned) + '☆'.repeat(3-starsEarned) +'</div>') :
+        '<span class="lock-icon">🔒</span>';
+      if(unlocked){
+        (function(idx){
+          btn.addEventListener('click', function(){ startLevel(idx); });
+        })(i);
+      }
+      grid.appendChild(btn);
+    }
+  }
+
+  /* ============ GAME LOGIC ============ */
+  function shuffleArray(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function startLevel(idx){
+    state.currentLevelIndex = idx;
+    state.mistakesThisLevel = 0;
+    state.piecesPlaced = 0;
+    var level = LEVELS[idx];
+    state.totalPieces = level.shapes.length;
+    document.getElementById('game-level-label').textContent = 'Niveau ' + (idx+1);
+    updateStarTrack();
+    setSpeech('Aide Lily à glisser chaque forme sur son emplacement !');
+    setMascotState('idle');
+    buildBoard(level);
+    showScreen('screen-game');
+  }
+
+  function updateStarTrack(){
+    var remaining = Math.max(0, 3-state.mistakesThisLevel);
+    document.getElementById('game-star-track').textContent = '⭐'.repeat(remaining) + '☆'.repeat(3-remaining);
+  }
+
+  function setSpeech(text){ document.getElementById('speech').textContent = text; }
+  function setMascotState(state){
+    var el = document.getElementById('mascot');
+    el.dataset.state = state;
+    el.classList.remove('pop');
+    void el.offsetWidth; // force le navigateur à relancer l'animation
+    if(state === 'happy'){ el.classList.add('pop'); }
+  }
+
+  function buildBoard(level){
+    var board = document.getElementById('board');
+    var tray = document.getElementById('tray');
+    board.innerHTML = '';
+    tray.innerHTML = '';
+
+    // Clean up any pieces from a previous level that were moved
+    // straight into document.body (placed pieces, or pieces left
+    // mid-drag if the player switched level/screen while dragging).
+    document.querySelectorAll('body > .piece').forEach(function(p){ p.remove(); });
+    dragCtx = null;
+
+    var isSmall = !!level.small;
+    var sizeVal = isSmall ? 'clamp(60px,10vw,90px)' : 'clamp(76px,13vw,110px)';
+
+    var boardOrder = level.shapes;
+    var trayOrder = level.shuffle ? shuffleArray(level.shapes) : level.shapes.slice();
+
+    boardOrder.forEach(function(shape){
+      var slot = document.createElement('div');
+      slot.className = 'slot shape-inner shape-' + shape;
+      slot.style.width = sizeVal;
+      slot.style.height = sizeVal;
+      slot.dataset.shape = shape;
+      board.appendChild(slot);
+    });
+
+    trayOrder.forEach(function(shape, i){
+      var piece = document.createElement('div');
+      piece.className = 'piece';
+      piece.style.width = sizeVal;
+      piece.style.height = sizeVal;
+      piece.dataset.size = sizeVal;
+      piece.style.animationDelay = (i*0.15)+'s';
+      piece.dataset.shape = shape;
+      var inner = document.createElement('div');
+      inner.className = 'shape-inner shape-' + shape;
+      inner.style.width = '100%';
+      inner.style.height = '100%';
+      inner.style.background = SHAPE_COLORS[shape];
+      piece.appendChild(inner);
+      tray.appendChild(piece);
+      attachDrag(piece);
+    });
+  }
+
+  /* ============ DRAG & DROP ============ */
+  // Empêche une forme d'être déposée ou déplacée hors de l'écran :
+  // on borne sa position (haut-gauche) pour qu'elle reste toujours
+  // entièrement visible, comme si un mur invisible entourait l'écran.
+  function clampToScreen(left, top, w, h){
+    var maxLeft = Math.max(0, window.innerWidth - w);
+    var maxTop = Math.max(0, window.innerHeight - h);
+    return {
+      left: Math.min(Math.max(left, 0), maxLeft),
+      top: Math.min(Math.max(top, 0), maxTop)
+    };
+  }
+
+  var dragCtx = null;
+
+  function attachDrag(piece){
+    piece.addEventListener('pointerdown', function(e){
+      if(piece.classList.contains('placed')) return;
+      e.preventDefault();
+      var rect = piece.getBoundingClientRect();
+      // On tactile, on remonte la forme au-dessus du doigt pour qu'elle
+      // ne soit pas cachée par le contact. Pas nécessaire à la souris.
+      var lift = (e.pointerType === 'touch') ? Math.max(70, rect.height*0.9) : 0;
+      dragCtx = {
+        piece: piece,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        lift: lift,
+        originalParent: piece.parentNode,
+        originalNext: piece.nextSibling,
+        w: rect.width, h: rect.height
+      };
+      document.body.appendChild(piece);
+      piece.style.position = 'fixed';
+      piece.style.width = dragCtx.w+'px';
+      piece.style.height = dragCtx.h+'px';
+      var startPos = clampToScreen(e.clientX - dragCtx.offsetX, e.clientY - dragCtx.offsetY - lift, dragCtx.w, dragCtx.h);
+      piece.style.left = startPos.left+'px';
+      piece.style.top = startPos.top+'px';
+      piece.classList.add('dragging');
+      try{ piece.setPointerCapture(e.pointerId); }catch(err){}
+      playPickup();
+    });
+
+    piece.addEventListener('pointermove', function(e){
+      if(!dragCtx || dragCtx.piece !== piece) return;
+      var pos = clampToScreen(e.clientX - dragCtx.offsetX, e.clientY - dragCtx.offsetY - dragCtx.lift, dragCtx.w, dragCtx.h);
+      piece.style.left = pos.left+'px';
+      piece.style.top = pos.top+'px';
+    });
+
+    piece.addEventListener('pointerup', function(e){
+      if(!dragCtx || dragCtx.piece !== piece) return;
+      // On teste le dépôt à la position VISIBLE de la forme (donc décalée
+      // du lift), pas à la position brute du doigt, sinon la détection
+      // de la case ne correspondrait plus à ce que l'enfant voit.
+      handleDrop(piece, e.clientX, e.clientY - dragCtx.lift);
+      dragCtx = null;
+    });
+    piece.addEventListener('pointercancel', function(){
+      if(!dragCtx || dragCtx.piece !== piece) return;
+      returnToTray(piece);
+      dragCtx = null;
+    });
+  }
+
+  function returnToTray(piece){
+    piece.classList.remove('dragging');
+    piece.style.position = '';
+    piece.style.left = '';
+    piece.style.top = '';
+    // Restaurer la taille d'origine : la vider la ferait s'effondrer à 0.
+    piece.style.width = piece.dataset.size || '';
+    piece.style.height = piece.dataset.size || '';
+    piece.style.pointerEvents = '';
+    piece.style.zIndex = '';
+    var tray = document.getElementById('tray');
+    tray.appendChild(piece);
+  }
+
+  function handleDrop(piece, x, y){
+    var slots = document.querySelectorAll('#board .slot');
+    var bestSlot = null, bestDist = Infinity;
+    slots.forEach(function(slot){
+      var r = slot.getBoundingClientRect();
+      var cx = r.left+r.width/2, cy = r.top+r.height/2;
+      var d = Math.hypot(x-cx, y-cy);
+      var threshold = Math.max(r.width, r.height) * 0.75;
+      if(d < threshold && d < bestDist){ bestDist = d; bestSlot = slot; }
+    });
+
+    if(bestSlot && !bestSlot.classList.contains('filled')){
+      if(bestSlot.dataset.shape === piece.dataset.shape){
+        // correct!
+        var r = bestSlot.getBoundingClientRect();
+        piece.classList.remove('dragging');
+        piece.classList.add('placed');
+        piece.style.position = 'fixed';
+        piece.style.left = r.left+'px';
+        piece.style.top = r.top+'px';
+        piece.style.width = r.width+'px';
+        piece.style.height = r.height+'px';
+        bestSlot.classList.add('filled');
+        piece.style.pointerEvents = 'none';
+        state.piecesPlaced++;
+        playCorrect();
+        burstConfetti(18);
+        setMascotState('happy');
+        var praise = ENCOURAGEMENTS[Math.floor(Math.random()*ENCOURAGEMENTS.length)];
+        setSpeech(praise);
+        // La voix annonce la forme réussie : "Bravo ! Un cercle."
+        speak(praise + ' ' + (SHAPE_SPOKEN_FR[piece.dataset.shape] || ''));
+        if(state.piecesPlaced >= state.totalPieces){
+          setTimeout(finishLevel, 500);
+        }
+        return;
+      } else {
+        // wrong shape for this slot
+        state.mistakesThisLevel++;
+        updateStarTrack();
+        playTryAgain();
+        setMascotState('confused');
+        setSpeech(TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)]);
+      }
+    }
+    returnToTray(piece);
+  }
+
+  function finishLevel(){
+    // Retirer les pièces posées (en position fixed) : sinon elles
+    // restent affichées par-dessus la carte de félicitations.
+    document.querySelectorAll('body > .piece').forEach(function(p){ p.remove(); });
+
+    var levelNum = state.currentLevelIndex+1;
+    var stars = state.mistakesThisLevel === 0 ? 3 : (state.mistakesThisLevel <= 2 ? 2 : 1);
+    var prevBest = state.progress.stars[levelNum] || 0;
+    state.progress.stars[levelNum] = Math.max(prevBest, stars);
+    if(state.progress.unlockedLevel <= levelNum && levelNum < LEVELS.length){
+      state.progress.unlockedLevel = levelNum+1;
+    }
+    saveProgress();
+
+    var isLast = levelNum === LEVELS.length;
+    document.getElementById('complete-title').textContent = isLast ? '🏆 Bravo, tu as tout réussi !' : 'Niveau '+levelNum+' réussi !';
+    document.getElementById('complete-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+    document.getElementById('complete-msg').textContent = isLast ?
+      'Tu connais toutes les formes. Quelle réussite !' :
+      'Tu as bien reconnu ' + level_shapes_text(LEVELS[state.currentLevelIndex].shapes) + ' !';
+
+    var nextBtn = document.getElementById('btn-next');
+    nextBtn.style.display = isLast ? 'none' : 'inline-block';
+
+    if(isLast){ playGameComplete(); burstConfetti(60); } else { playLevelComplete(); burstConfetti(30); }
+    showScreen('screen-complete');
+  }
+
+  function level_shapes_text(shapes){
+    return shapes.map(function(s){ return SHAPE_NAMES_FR[s]; }).join(' et ');
+  }
+
+  /* ============ EVENT WIRING ============ */
+  document.getElementById('btn-home-from-levels').addEventListener('click', function(){ renderHome(); showScreen('screen-home'); });
+  document.getElementById('btn-home-from-game').addEventListener('click', function(){ renderHome(); showScreen('screen-home'); });
+  document.getElementById('btn-home-complete').addEventListener('click', function(){ renderHome(); showScreen('screen-home'); });
+  document.getElementById('btn-replay').addEventListener('click', function(){ startLevel(state.currentLevelIndex); });
+  document.getElementById('btn-next').addEventListener('click', function(){
+    var next = state.currentLevelIndex+1;
+    if(next < LEVELS.length) startLevel(next);
+    else { renderLevelSelect(); showScreen('screen-levels'); }
+  });
+
+  /* ============ DECORATIVE BACKGROUND ============ */
+  function addDeco(){
+    var app = document.getElementById('app');
+    var sun = document.createElement('div');
+    sun.className = 'deco';
+    sun.style.cssText = 'top:6%;right:8%;width:70px;height:70px;background:radial-gradient(circle,#FFE38A,#FFC93C);box-shadow:0 0 30px rgba(255,201,60,.6);';
+    app.insertBefore(sun, app.firstChild);
+    var hill = document.createElement('div');
+    hill.className = 'hill';
+    hill.style.left='-10%';
+    app.insertBefore(hill, app.firstChild);
+    var hill2 = document.createElement('div');
+    hill2.className = 'hill';
+    hill2.style.cssText='right:-15%;width:50%;height:130px;background:#CDEBC0;';
+    app.insertBefore(hill2, app.firstChild);
+  }
+
+  /* ============ INIT ============ */
+  function init(){
+    addDeco();
+    loadProgress().then(function(){
+      renderHome();
+      showScreen('screen-home');
+    });
+
+    // Les navigateurs (surtout iPhone) bloquent l'audio tant que
+    // l'enfant n'a pas touché l'écran. On démarre donc la musique
+    // à la première interaction.
+    function unlockAudio(){
+      var ctx = getCtx();
+      if(ctx && ctx.state === 'suspended'){ ctx.resume(); }
+      if(musicOn) startMusic();
+      // Réveiller + amorcer la synthèse vocale sur iOS
+      if('speechSynthesis' in window){ try{ window.speechSynthesis.resume(); }catch(e){} }
+      primeVoice();
+      document.removeEventListener('pointerdown', unlockAudio);
+    }
+    document.addEventListener('pointerdown', unlockAudio);
+
+    // Bouton musique on/off
+    var musicBtn = document.getElementById('btn-music');
+    if(musicBtn){
+      musicBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var on = toggleMusic();
+        musicBtn.textContent = on ? '🔊' : '🔇';
+      });
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
